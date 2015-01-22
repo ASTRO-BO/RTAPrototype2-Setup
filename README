@@ -1,0 +1,50 @@
+1. INTRODUCTION
+
+RTAPrototype2-Setup installs the 2nd Real-time Analysis Prototype for the CTA Observatory.
+
+The submodules are free software, released under the GNU GPL 2. See the LICENSE file present within the submodules.
+
+2. QUICK START
+
+In order to download the submodules required for the installation process you need to run:
+
+    git submodule update --init
+
+3. REQUIREMENTS
+
+Basic requirements:
+    - cfitsio-dev
+
+Optional requirements:
+
+4. COMPILATION / SETUP
+
+In order to build and install in the default prefix ~/local.rtaproto2 just use:
+
+	./install
+
+To set a different prefix you can do:
+
+    ./install -p <install-prefix>
+
+for more informations:
+	./install --help
+
+5. RUNNING PROGRAMS
+
+In order to run the executables you need to add the <install-prefix> to your LD_LIBRARY_PATH:
+
+    export LD_LIBRARY_PATH=<install-prefix>/lib:$LD_LIBRARY_PATH
+
+for Mac OS X the export is:
+
+    export DYLD_LIBRARY_PATH=<install-prefix>/lib:$DYLD_LIBRARY_PATH
+
+Eventually, to run executables you need just to go to the install prefix:
+
+   cd <install-prefix>/bin
+   ./alg1
+
+6. GETTING MORE INFORMATION
+
+If you need additional informations you can ask for support via email at bulgarelli@iasfbo.inaf.it.

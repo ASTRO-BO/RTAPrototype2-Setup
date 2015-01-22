@@ -1,0 +1,18 @@
+[submodule "CTAUtils"]
+	path = CTAUtils
+	url = https://github.com/ASTRO-BO/CTAUtils.git
+[submodule "CTAConfig"]
+	path = CTAConfig
+	url = https://github.com/ASTRO-BO/CTAConfig.git
+[submodule "CTAAlgorithms"]
+	path = CTAAlgorithms
+	url = https://github.com/ASTRO-BO/CTAAlgorithms.git
+[submodule "PacketLib"]
+	path = PacketLib
+	url = https://github.com/ASTRO-BO/PacketLib.git
+[submodule "RTAAlgorithms"]
+	path = RTAAlgorithms
+	url = https://github.com/ASTRO-BO/RTAAlgorithms.git
+[submodule "RTAPrototype2"]
+	path = RTAPrototype2
+	url = https://github.com/ASTRO-BO/RTAPrototype2.git

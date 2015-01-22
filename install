@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+
+trap exit ERR
+
+prefix=$HOME/local.rtaproto2
+sourcedir=$PWD
+build_type=Release
+buildexe=true
+platform=$(uname -s)
+if [[ $platform == "Darwin" ]] ; then
+	nthreads=$(sysctl hw.ncpu | awk '{print $2}')
+else
+	nthreads=$(cat /proc/cpuinfo | grep processor | wc -l)
+fi
+clean=$1
+
+function exitfunc() {
+	if [[ $plaform == "Darwin" ]] ; then
+		tput seaf op
+	fi
+
+	exit
+}
+
+function echo_red() {
+	if [[ $platform == "Darwin" ]] ; then
+		tput setaf 1
+		echo $@
+		tput setaf op
+	else
+		echo -e "\e[00;31m$1\e[00m"
+	fi
+}
+
+function set_debug_flags() {
+	if [[ $build_type == "Debug" ]] ; then
+		export CFLAGS="$CFLAGS -O0 -g" ; export CXXFLAGS="$CXXFLAGS -O0 -g"
+	else
+		export CFLAGS="$CFLAGS -O2" ; export CXXFLAGS="$CXXFLAGS -O2"
+	fi
+}
+
+function reset_flags() {
+	unset CFLAGS ; unset CXXFLAGS ; unset LDFLAGS
+}
+
+function show_help {
+	echo "Usage: $0 [-hld] [-p PREFIX] [-n NUMTHREADS] [clean]"
+	echo "    -h             print this help"
+	echo "    -p PREFIX      set installation prefix, default is \$HOME/local.rtaproto2"
+	echo "    -l             install only the libRTAAlgorithms"
+	echo "    -n NUMTHREADS  default number of threads is equal to the number of cores"
+	echo "    -d             compile with debug"
+	exit
+}
+
+#################################################
+# parse command options
+
+while getopts "hp:ln:d" o;
+do
+	case "${o}" in
+		h)
+			show_help
+			;;
+
+		p)
+			prefix=${OPTARG}
+			;;
+
+		l)
+			buildexe=false
+			;;
+
+		n)
+			nthreads=${OPTARG}
+			;;
+
+		d)
+			build_type=Debug
+			;;
+
+		*)
+			show_help
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+#################################################
+# check privileges and create prefix directories
+
+trap - ERR
+mkdir -p $prefix
+if [ $? -ne 0 ] ; then
+	trap exitfunc ERR
+	echo_red "You have not the write permissions on $prefix."
+	echo_red "Maybe you want to run the script as root? Trying with sudo.."
+	sudo=sudo
+	$sudo mkdir -p $prefix
+fi
+trap exitfunc ERR
+
+#################################################
+# add prefix path to the environment
+
+export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:${prefix}/include
+export LIBRARY_PATH=$LIBRARY_PATH:${prefix}/lib
+
+#################################################
+# build packages
+
+declare -a libs=("PacketLib" "CTAUtils" "CTAConfig" "CTAAlgorithms")
+declare -a execs=("RTAAlgorithms" "RTAPrototype2")
+
+for i in "${libs[@]}"
+do
+	pushd $PWD
+	cd $sourcedir/$i
+	if [[ $clean == "clean" ]] ; then
+		echo_red "#### cleaning $i"
+		make clean
+		echo_red "#### clean complete."
+	else
+	echo_red "#### installing $i"
+		set_debug_flags
+		make -j$nthreads
+		$sudo make install prefix="$prefix"
+		reset_flags
+		echo_red "#### $i installation successful."
+	fi
+	popd
+done
+
+if ! $buildexe ; then
+	echo_red "#### Done."
+	exit
+fi
+
+for i in "${execs[@]}" ; do
+	pushd $PWD
+	cd $sourcedir/$i
+	if [[ $clean == "clean" ]] ; then
+		echo_red "#### cleaning $i"
+		make clean
+		echo_red "#### clean complete."
+	else
+	echo_red "#### installing $i"
+		set_debug_flags
+		make -j$nthreads
+		$sudo make install prefix="$prefix"
+		reset_flags
+		echo_red "#### $i installation successful."
+	fi
+	popd
+done
+echo_red "#### Done."

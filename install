@@ -19,7 +19,7 @@ function exitfunc() {
 		tput seaf op
 	fi
 
-	exit
+	exit -1
 }
 
 function echo_red() {

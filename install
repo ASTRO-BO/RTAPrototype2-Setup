@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-trap exit ERR
+trap exitfunc ERR
 
 prefix=$HOME/local.rtaproto2
 sourcedir=$PWD
@@ -102,10 +102,56 @@ fi
 trap exitfunc ERR
 
 #################################################
-# add prefix path to the environment
+# generate profile and load it
 
-export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:${prefix}/include
-export LIBRARY_PATH=$LIBRARY_PATH:${prefix}/lib
+if [[ $clean != "clean" ]] ; then
+
+echo_red "#### generating profile"
+
+cat << EOF > profile_rtaproto2
+#!/usr/bin/env bash
+
+rtaproto2_prefix=$prefix
+include_paths="\$rtaproto2_prefix/include"
+lib_paths="\$rtaproto2_prefix/lib"
+bin_paths="\$rtaproto2_prefix/bin"
+
+if [[ -z \$C_INCLUDE_PATH || \$C_INCLUDE_PATH != *"\$include_paths"* ]] ; then
+    export C_INCLUDE_PATH="\$include_paths"\${C_INCLUDE_PATH:+:\$C_INCLUDE_PATH}
+fi
+if [[ -z \$CPLUS_INCLUDE_PATH || \$CPLUS_INCLUDE_PATH != *"\$include_paths"* ]] ; then
+    export CPLUS_INCLUDE_PATH="\$include_paths"\${CPLUS_INCLUDE_PATH:+:\$CPLUS_INCLUDE_PATH}
+fi
+if [[ -z \$PATH || \$PATH != *"\$bin_paths"* ]] ; then
+    export PATH="\$bin_paths"\${PATH:+:\$PATH}
+fi
+if [[ -z \$CMAKE_INCLUDE_PATH || \$CMAKE_INCLUDE_PATH != *"\$include_paths"* ]] ; then
+    export CMAKE_INCLUDE_PATH="\$include_paths"\${CMAKE_INCLUDE_PATH:+:\$CMAKE_INCLUDE_PATH}
+fi
+if [[ -z \$CMAKE_LIBRARY_PATH || \$CMAKE_LIBRARY_PATH != *"\$lib_paths"* ]] ; then
+    export CMAKE_LIBRARY_PATH="\$lib_paths"\${CMAKE_LIBRARY_PATH:+:\$CMAKE_LIBRARY_PATH}
+fi
+if [[ -z \$LIBRARY_PATH || \$LIBRARY_PATH != *"\$lib_paths"* ]] ; then
+    export LIBRARY_PATH="\$lib_paths"\${LIBRARY_PATH:+:\$LIBRARY_PATH}
+fi
+if [[ -z \$LD_LIBRARY_PATH || \$LD_LIBRARY_PATH != *"\$lib_paths"* ]] ; then
+    export LD_LIBRARY_PATH="\$lib_paths"\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}
+fi
+if [[ -z \$DYLD_LIBRARY_PATH || \$DYLD_LIBRARY_PATH != *"\$lib_paths"* ]] ; then
+    export DYLD_LIBRARY_PATH="\$lib_paths"\${DYLD_LIBRARY_PATH:+:\$DYLD_LIBRARY_PATH}
+fi
+if [[ -z \$PYTHONPATH || \$PYTHONPATH != *"\$lib_paths"* ]] ; then
+    export PYTHONPATH="\$lib_paths"\${PYTHONPATH:+:\$PYTHONPATH}
+fi
+
+export CTARTA=\$rtaproto2_prefix
+
+EOF
+
+echo_red "#### loading profile"
+. profile_rtaproto2
+
+fi
 
 #################################################
 # build packages
@@ -154,4 +200,10 @@ for i in "${execs[@]}" ; do
 	fi
 	popd
 done
+
+if [[ $1 != "clean" ]] ; then
+	cd $sourcedir
+	$sudo cp -p profile_rtaproto2 $prefix/share
+fi
+
 echo_red "#### Done."

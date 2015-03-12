@@ -13,7 +13,8 @@ In order to download the submodules required for the installation process you ne
 3. REQUIREMENTS
 
 Basic requirements:
-    - cfitsio-dev
+    - cfitsio-devel
+    - zeromq3-devel
 
 Optional requirements:
 
